@@ -1,0 +1,17 @@
+{
+  "sections": {
+    "collection-header": {
+      "type": "collection-header",
+      "settings": {
+        "enable": true,
+        "collection_image_enable": false,
+        "parallax": false
+      }
+    },
+    "main": {
+      "type": "collection",
+      "settings": {}
+    }
+  },
+  "order": ["collection-header", "main"]
+}

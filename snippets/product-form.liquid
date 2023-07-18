@@ -1,0 +1,217 @@
+{% assign sca_product = product %}{% assign sca_product_id_text = "," | append : sca_product.id | append : "," %}{% assign sca_price = sca_product.price %}{% assign sca_price_min = sca_product.price_min %}{% assign sca_price_max = sca_product.price_max %}{% assign sca_compare_at_price = sca_product.compare_at_price %}{% assign sca_compare_at_price_min = sca_product.compare_at_price_min %}{% assign sca_compare_at_price_max = sca_product.compare_at_price_max %}{% assign sca_product_available = sca_product.available %}{% assign sca_product_variantCount = sca_product.variants.size %}{% assign sca_compare_at_price_varies = sca_product.compare_at_price_varies %}{% assign sca_price_varies = sca_product.price_varies %}{% assign sca_has_only_default_variant = false %}{% capture sca_product_variants_json %}{{sca_product.variants | json }}{% endcapture %} {% capture sca_product_json %}{ {% if sca_all_gift_products_ids == null or sca_all_gift_products_ids contains sca_product_id_text %}{% assign sca_product_available = false %}{% assign sca_product_variantCount = 0 %}{% assign sca_has_only_default_variant = true %}{% assign sca_is_first_variant = true %}{% capture sca_variants_json %} [{% for variant in sca_product.variants %}{% unless variant.title contains "% off)" %}{% unless variant.title contains '(Freegifts)' %}{% unless variant.title contains '% Off' %}{% unless variant.metafields.shappify_qb.qb_hide == "1" %}{% unless variant.metafields.shappify_bundle.is_bundle == "true" %}{% unless variant.metafields.brodev_scn.hide == "true" %}{% unless variant.metafields.wholesaler2.wholesale %}{% unless variant.metafields.Wholesaler.level %}{% unless variant.title contains '(Wholesale' %}{% if sca_is_first_variant%} {{ variant | json }}{% assign sca_price = variant.price %} {% assign sca_price_min = variant.price %} {% assign sca_price_max = variant.price %} {% assign sca_compare_at_price = variant.compare_at_price %} {% assign sca_compare_at_price_min = variant.compare_at_price %} {% assign sca_compare_at_price_max = variant.compare_at_price %} {% assign sca_product_available = variant.available %} {% assign sca_product_variantCount = 1 %} {% assign sca_is_first_variant = false%}{% else %},{{variant | json }} {% if sca_price_min >= variant.price %} {% assign sca_price_min = variant.price %} {% assign sca_price = variant.price %}{% endif %} {% if sca_price_max <= variant.price %} {% assign sca_price_max = variant.price %} {% endif %} {% if variant.compare_at_price %} {% if sca_compare_at_price_min==null or sca_compare_at_price_min >= variant.compare_at_price %} {% assign sca_compare_at_price_min = variant.compare_at_price %} {% assign sca_compare_at_price = variant.compare_at_price %} {% endif %} {% if sca_compare_at_price_max==null or sca_compare_at_price_max < variant.compare_at_price %} {% assign sca_compare_at_price_max = variant.compare_at_price %} {% endif %} {% endif %} {% if variant.available == true %} {% assign sca_product_available = true %} {% endif %} {% assign sca_product_variantCount = sca_product_variantCount | plus: 1 %}{% endif %}{% endunless %}{% endunless %}{% endunless %}{% endunless %}{% endunless %}{% endunless %}{% endunless %}{% endunless %}{% endunless %}{%endfor%} ]{% endcapture %}{% if sca_price_min < sca_price_max %}{% assign sca_price_varies = true %}{% else %}{% assign sca_price_varies = false %}{% endif %}{% if sca_compare_at_price_min < sca_compare_at_price_max %}{% assign sca_compare_at_price_varies = true %}{% else %}{% assign sca_compare_at_price_varies = false %}{% endif %}{% if sca_product_variantCount > 1 %}{% assign sca_has_only_default_variant = false %}{% endif %}{% if sca_product_variantCount == sca_product.variants.size %} "variants":{{ sca_product.variants }},{% else %}{%assign sca_product_variants_json = sca_variants_json %} "variants":{{ sca_variants_json }},{% endif %}{% else %} "variants":{{ sca_product_variants_json }},{% endif %} "id": {{sca_product.id}}, "title": {{sca_product.title | json}}, "handle": {{sca_product.handle | json}}, "description": {{sca_product.description | json}}, "published_at": "{{sca_product.published_at | date: "%Y-%m-%dT%H-%M-%S%:z" }}", "created_at": "{{sca_product.created_at | date: "%Y-%m-%dT%H-%M-%S%:z" }}", "vendor": {{sca_product.vendor | json}}, "type": {{sca_product.type | json}}, "tags": {{sca_product.tags | json}}, "price": {{sca_price}}, "price_min": {{sca_price_min}}, "price_max": {{sca_price_max}}, "available": {{sca_product.available}}, "price_varies": {{sca_price_varies}}, "compare_at_price": {{sca_compare_at_price}}, "compare_at_price_min": {{sca_compare_at_price_min}}, "compare_at_price_max": {{sca_compare_at_price_max}}, "compare_at_price_varies": {{sca_compare_at_price_varies}}, "images": {{sca_product.images | json}}, "featured_image": {{sca_product.featured_image | json }}, "options": {{sca_product.options | json}}, "media": {{sca_product.media | json }}, "content": {{sca_product.content | json }}} {% endcapture sca_product_json %}
+
+{% capture wpd_discounted_prices %}{%- render 'wcp_discount'  wcp_discount:product , wpd_is_render:'yes' -%}{% endcapture %}
+
+{%- capture v_discount_tag -%}{%-render 'wcp_render_discount' , wpd_discounted_prices:wpd_discounted_prices, price_variable:'v_discount_tag'-%}{%- endcapture -%}
+{%- capture wcp_discount_value -%}{%- render 'wcp_render_discount' , wpd_discounted_prices:wpd_discounted_prices, price_variable:'wcp_discount_value' -%}{%- endcapture -%}
+{%- capture p_discount_tag -%}{%- render 'wcp_render_discount' , wpd_discounted_prices:wpd_discounted_prices, price_variable:'p_discount_tag' -%}{%- endcapture -%}
+
+{% assign raw_set_prices = product.metafields.wcp_set_prices.wcp_set_prices %}
+{% assign set_prices_array = blank %}
+{% if raw_set_prices %}
+{% assign set_prices_array = raw_set_prices | split: ',' %}
+{% endif %}
+{% assign v_discount_tag = v_discount_tag | strip %}
+{% capture wcp_v_discounted_prices %}{%- render 'wcp_variant' , wcp_variant:product.selected_or_first_available_variant , set_prices_array:set_prices_array , wpd_is_render:'yes', v_discount_tag : v_discount_tag , wcp_discount_value : wcp_discount_value -%}{%- endcapture -%}
+{%- capture wcp_v_price -%}{%- render 'wcp_render_discount' , wpd_discounted_prices:wcp_v_discounted_prices, price_variable:'wcp_v_price' -%}{%- endcapture -%}
+{%- capture wcp_v_compare_at_price -%}{%- render 'wcp_render_discount' , wpd_discounted_prices:wcp_v_discounted_prices, price_variable:'wcp_v_compare_at_price' -%}{%- endcapture -%}
+
+
+{% assign  wcp_v_price= wcp_v_price | minus: 0 %}
+
+{%- capture form_id -%}AddToCartForm-{{ section_id }}{%- endcapture -%}
+{%- form 'product', product, id: form_id, class: 'product-single__form' -%}
+  {% comment %}
+    Automatically inserted by Shop Pay Installments theme updater
+  {% endcomment %}
+  {% unless settings.disable_autogenerated_payment_terms %}
+    {{ form | payment_terms }}
+  {% endunless %}
+  {%- unless sca_product_variantCount == 1 -%}
+    {%- for option in product.options_with_values -%}
+      {%- liquid
+        if settings.product_color_swatches
+          assign is_color = false
+          assign color_option_index = 0
+          assign swatch_trigger = 'products.general.color_swatch_trigger' | t | downcase
+          assign color_option_index = forloop.index0
+          assign downcased_option = option.name | downcase
+          if downcased_option contains swatch_trigger
+            assign is_color = true
+          elsif swatch_trigger == 'color' and downcased_option contains 'colour'
+            assign is_color = true
+          endif
+        endif
+      -%}
+
+      {%- if settings.variant_type == 'button' -%}
+        {%- render 'variant-button',
+          section_id: section_id,
+          option: option,
+          forloop: forloop,
+          is_color: is_color,
+          color_option_index: color_option_index
+        -%}
+      {%- else -%}
+        {%- render 'variant-dropdown',
+          section_id: section_id,
+          option: option,
+          forloop: forloop
+        -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endunless -%}
+
+  <select name="id" id="ProductSelect-{{ section_id }}" class="product-single__variants no-js">
+    {%- for variant in product.variants -%}
+    
+    {% capture wcp_v_discounted_prices %}{%- render 'wcp_variant' , wcp_variant:variant, set_prices_array:set_prices_array , wpd_is_render:'yes', v_discount_tag : v_discount_tag , wcp_discount_value : wcp_discount_value -%}{%- endcapture -%}
+    {%- capture wcp_v_price -%}{%- render 'wcp_render_discount' , wpd_discounted_prices:wcp_v_discounted_prices, price_variable:'wcp_v_price' -%}{%- endcapture -%}
+
+    {% assign  wcp_v_price= wcp_v_price | minus: 0 %}
+    
+      {%- if variant.available -%}
+        <option {% if variant == product.selected_or_first_available_variant %}
+          selected="selected"{% endif %}
+          value="{{ variant.id }}">
+          {{ variant.title }} - {{ wcp_v_price | money_with_currency }}
+        </option>
+      {%- else -%}
+        <option disabled="disabled" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}">
+          {{ variant.title }} - {{ 'products.product.sold_out' | t }}
+        </option>
+      {%- endif -%}
+    {%- endfor -%}
+    
+    {% capture wcp_v_discounted_prices %}{%- render 'wcp_variant' , wcp_variant:product.selected_or_first_available_variant , set_prices_array:set_prices_array , wpd_is_render:'yes', v_discount_tag : v_discount_tag , wcp_discount_value : wcp_discount_value -%}{%- endcapture -%}
+    {%- capture wcp_v_price -%}{%- render 'wcp_render_discount' , wpd_discounted_prices:wcp_v_discounted_prices, price_variable:'wcp_v_price' -%}{%- endcapture -%}
+
+    {% assign  wcp_v_price= wcp_v_price | minus: 0 %}
+    
+  </select>
+
+  {%- if settings.quantity_enable -%}
+    <div class="product__quantity product__quantity--{{ settings.variant_type }}">
+      <label for="Quantity-{{ section_id }}">{{ 'products.product.quantity' | t }}</label>
+      {%- render 'quantity-input', id: section_id, qty: 1, min: 1 -%}
+    </div>
+  {%- endif -%}
+
+  {%- liquid
+    assign inventory_visible = false
+    if settings.inventory_enable and current_variant.inventory_management == 'shopify'
+      if current_variant.inventory_quantity <= settings.inventory_threshold and current_variant.inventory_quantity >= 0
+        assign inventory_visible = true
+      endif
+    endif
+    if current_variant.inventory_quantity == 0 or current_variant.inventory_policy == 'continue'
+      assign inventory_visible = false
+    endif
+  -%}
+
+  {%- if settings.inventory_enable -%}
+    <div
+      id="ProductInventory-{{ section_id }}"
+      class="product__inventory{% unless inventory_visible %} hide{% endunless %}"
+      >
+      {%- if current_variant.available -%}
+        {{ 'products.product.stock_label' | t: count: current_variant.inventory_quantity }}
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  {%- if settings.inventory_transfers_enable -%}
+    <div
+      id="ProductIncomingInventory-{{ section_id }}"
+      class="product__inventory{% if inventory_visible %} hide{% endif %}">
+      {%- if current_variant.incoming and inventory_visible == false -%}
+        {%- if current_variant.next_incoming_date -%}
+          {%- assign date = current_variant.next_incoming_date | date: format: 'date' -%}
+          {%- if current_variant.available -%}
+            {{ 'products.product.will_not_ship_until' | t: date: date }}
+          {%- else -%}
+            {{ 'products.product.will_be_in_stock_after' | t: date: date }}
+          {%- endif -%}
+        {%- else -%}
+          {{ 'products.product.waiting_for_stock' | t }}
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  {%- liquid
+    assign enable_dynamic_buttons = false
+    if settings.enable_payment_button and template != 'product.preorder'
+      assign enable_dynamic_buttons = true
+    endif
+  -%}
+
+  {%- if enable_dynamic_buttons -%}
+    <div class="payment-buttons">
+  {%- endif -%}
+
+    {%- liquid
+      assign default_text = 'products.product.add_to_cart' | t
+      assign button_text = 'products.product.add_to_cart' | t
+      if current_variant.available
+        if template == 'product.preorder'
+          assign default_text = 'products.product.add_to_cart' | t
+          assign button_text = 'products.product.preorder' | t
+        endif
+      else
+        assign button_text = 'products.product.sold_out' | t
+      endif
+    -%}
+
+    <button
+      {% if product.empty? %}type="button"{% else %}type="submit"{% endif %}
+      name="add"
+      id="AddToCart-{{ section_id }}"
+      class="btn btn--full add-to-cart{% if enable_dynamic_buttons %} btn--secondary{% endif %}"
+      {% unless current_variant.available %} disabled="disabled"{% endunless %}>
+      <span id="AddToCartText-{{ section_id }}" data-default-text="{{ default_text }}">
+        {{ button_text }}
+      </span>
+    </button>
+
+    {%- if enable_dynamic_buttons -%}
+  
+{% if current_variant.price != wcp_v_price %}<div style="display:none">{% endif %}{{ form | payment_button }}{% if current_variant.price != wcp_v_price %}</div>{% endif %}
+
+      {%- endif -%}
+
+  {%- if enable_dynamic_buttons -%}
+    </div>
+  {%- endif -%}
+
+
+
+
+
+
+  <textarea id="VariantsJson-{{ section_id }}" class="hide" aria-hidden="true">
+    {{ product.variants | json }}
+  </textarea>
+  {%- if product.options.size > 1 -%}
+    <textarea id="CurrentVariantJson-{{ section_id }}" class="hide" aria-hidden="true">
+      {{ current_variant | json }}
+    </textarea>
+  {%- endif -%}
+
+<div class="wcp_vd_table_main_container">
+			  <b>
+			  {% unless wcp_vd_HTML_table == '' or  wcp_vd_HTML_table == blank %}
+			  <br>
+			  <span>
+			  {{shop.metafields.wcp_net.VDTableNote}}
+			  <br/>
+			  </span>
+			  {% endunless %}
+			  </b>
+			  <div class-data="{{wcp_vd_HTML_table}}" id='wcp_vd_table' style ='margin-top :20px;'>{{wcp_vd_HTML_table}}</div>             
+		   </div>
+
+
+{%- endform -%}
+<div class="sca-fg-cat-list" style="display:none;" name="secomapp-fg-data-{{ product.id }}" data="{{ product | json }}"></div>
+<!-- GPO installed -->

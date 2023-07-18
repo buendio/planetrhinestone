@@ -1,0 +1,9 @@
+development:
+  password: shptka_4e6da5b1439c8415ec96500d1d792211
+  theme_id: "136862564607"
+  store: planetrhinestone.myshopify.com
+  ignore_files:
+    # - config/settings_data.json
+    # - config/settings_schema.json
+
+    # 134073516279

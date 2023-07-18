@@ -1,0 +1,24 @@
+{% layout none %}
+{% assign current_count = 0 %}
+{% assign prdlimit = 1 %}
+{% paginate search.results by prdlimit %}
+{% capture output %}
+{
+"wpd":
+[
+{% for item in search.results %}
+{% include 'wcp_discount' with item %}
+{%- assign current_variant = item.selected_or_first_available_variant -%}
+{% include 'wcp_variant' with current_variant %}
+{
+"ProductId" : "{{item.id}}"
+,"ProductMinPrice":"{{wcp_v_price}}"
+,"ProductMaxPrice":"{{ wcp_v_compare_at_price}}"
+},
+{% endfor %}
+{}
+]
+}
+{% endcapture %}
+{% endpaginate %}
+{{ output | strip_newlines }}
